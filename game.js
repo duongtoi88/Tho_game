@@ -1,3 +1,4 @@
+// game.js
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -55,13 +56,10 @@ let baby = {
   lastMoveTime: 0
 };
 
-let toy = {
-  x: 200,
-  y: 200,
-  size: 50,
-  name: 'toy1',
-  img: loadedToys[0].img
-};
+let toys = [
+  { x: 200, y: 200, size: 50, name: 'toy1', img: loadedToys[0].img },
+  { x: 300, y: 150, size: 50, name: 'toy2', img: loadedToys[1].img }
+];
 
 let score = 0;
 let timeLeft = 60;
@@ -71,7 +69,6 @@ let keys = {};
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
-// Cập nhật khung hình bò
 function updateBabyFrame() {
   const now = Date.now();
   if (now - baby.lastMoveTime > 100) {
@@ -81,7 +78,6 @@ function updateBabyFrame() {
   }
 }
 
-// Random trạng thái
 function randomState() {
   let newState;
   do {
@@ -92,16 +88,21 @@ function randomState() {
 }
 setInterval(randomState, 25000);
 
-// Random đồ vật
-function randomToy() {
-  const chosen = loadedToys[Math.floor(Math.random() * loadedToys.length)];
-  toy.x = Math.random() * (canvas.width - toy.size);
-  toy.y = Math.random() * (canvas.height - toy.size);
-  toy.img = chosen.img;
-  toy.name = chosen.name;
+function randomToys() {
+  const valid = validItems[currentState];
+  const invalid = loadedToys.filter(t => !valid.includes(t.name));
+  const validChoice = loadedToys.find(t => valid.includes(t.name));
+  const invalidChoice = invalid[Math.floor(Math.random() * invalid.length)];
+
+  toys = [validChoice, invalidChoice].map(t => ({
+    name: t.name,
+    img: t.img,
+    x: Math.random() * (canvas.width - 50),
+    y: Math.random() * (canvas.height - 50),
+    size: 50
+  }));
 }
 
-// Vẽ game
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -109,23 +110,26 @@ function draw() {
     ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
   }
 
-  ctx.drawImage(toy.img, toy.x, toy.y, toy.size, toy.size);
+  toys.forEach(toy => {
+    ctx.drawImage(toy.img, toy.x, toy.y, toy.size, toy.size);
+  });
+
   ctx.drawImage(baby.img, baby.x, baby.y, baby.size, baby.size);
 
-  // Va chạm
-  if (Math.abs(baby.x - toy.x) < 40 && Math.abs(baby.y - toy.y) < 40) {
-    if (validItems[currentState].includes(toy.name)) {
-      score++;
-      pointSound.play();
-      document.getElementById('score').textContent = score;
-    } else {
-      crySound.play();
-      alert('Bé khóc 😭 đồ chơi sai!');
+  toys.forEach((toy, index) => {
+    if (Math.abs(baby.x - toy.x) < 40 && Math.abs(baby.y - toy.y) < 40) {
+      if (validItems[currentState].includes(toy.name)) {
+        score++;
+        pointSound.play();
+        document.getElementById('score').textContent = score;
+      } else {
+        crySound.play();
+        alert('Bé khóc 😭 đồ chơi sai!');
+      }
+      randomToys();
     }
-    randomToy();
-  }
+  });
 
-  // Di chuyển + đổi frame
   if (keys['ArrowUp']) { baby.y -= 3; updateBabyFrame(); }
   if (keys['ArrowDown']) { baby.y += 3; updateBabyFrame(); }
   if (keys['ArrowLeft']) { baby.x -= 3; updateBabyFrame(); }
@@ -137,7 +141,6 @@ function draw() {
   requestAnimationFrame(draw);
 }
 
-// Đồng hồ
 function countdown() {
   timeLeft--;
   document.getElementById('time').textContent = timeLeft;
@@ -147,7 +150,6 @@ function countdown() {
   }
 }
 
-// Bắt đầu game
 function startGame() {
   score = 0;
   timeLeft = 60;
@@ -155,7 +157,7 @@ function startGame() {
   baby.y = 50;
   document.getElementById('score').textContent = score;
   document.getElementById('time').textContent = timeLeft;
-  randomToy();
+  randomToys();
   clearInterval(timer);
   timer = setInterval(countdown, 1000);
   draw();
