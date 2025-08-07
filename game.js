@@ -74,7 +74,7 @@ function countdown() {
   document.getElementById('time').textContent = timeLeft;
   if (timeLeft <= 0) {
     clearInterval(timer);
-    alert(`🎉 Hết giờ! Bé đã thu thập được ${score} món đồ chơi!`);
+    alert(`🎉 Hết giờ! Thỏ đã thu thập được ${score} món đồ chơi!`);
   }
 }
 
@@ -90,3 +90,4 @@ function startGame() {
   timer = setInterval(countdown, 1000);
   draw();
 }
+
