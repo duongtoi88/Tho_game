@@ -1,0 +1,16 @@
+/* style.css */
+body {
+  text-align: center;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f0f8ff;
+}
+
+#gameCanvas {
+  border: 3px solid #aaa;
+  background-color: #fff;
+}
+
+.info {
+  margin-top: 10px;
+  font-size: 18px;
+}
